@@ -1,24 +1,27 @@
 # Author Abdul Hafidh
-# Handwriting Digit Image Generator
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 import tensorflow_datasets as tfds
 import random
+import os
 
-# Load .keras model
-model = tf.keras.models.load_model('model/mnist_model.keras')
+# Suppress TensorFlow log warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# Load MNIST dataset (only once)
+# Load model only once
+@st.cache_resource
+def load_model():
+    return tf.keras.models.load_model('model/mnist_model.keras')
+
+model = load_model()
+
+# Load a subset of MNIST dataset (filtered by digit)
 @st.cache_data
-def load_mnist_samples():
-    ds = tfds.load('mnist', split='train', as_supervised=True)
-    digit_samples = {i: [] for i in range(10)}
-    for image, label in tfds.as_numpy(ds):
-        digit_samples[label].append(image)
-    return digit_samples
+def get_dataset():
+    return list(tfds.as_numpy(tfds.load('mnist', split='train', as_supervised=True)))
 
-digit_samples = load_mnist_samples()
+dataset = get_dataset()
 
 # App UI
 def main():
@@ -30,8 +33,9 @@ def main():
     if st.button("Generate Image"):
         st.write(f"Showing a sample image for digit: {digit}")
 
-        # Get a random image of the selected digit
-        image = random.choice(digit_samples[digit])
+        # Randomly select image of that digit
+        filtered_images = [img for img, lbl in dataset if lbl == digit]
+        image = random.choice(filtered_images)
         st.image(image, caption=f"Sample image of digit {digit}", width=150)
 
         # Prepare image for prediction
