@@ -8,6 +8,8 @@ import os
 
 # Suppress TensorFlow log warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['GOOGLE_CLOUD_DISABLE_GRPC'] = 'true'
+
 
 # Load model only once
 @st.cache_resource
