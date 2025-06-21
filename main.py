@@ -1,15 +1,14 @@
 # Author Abdul Hafidh
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['GOOGLE_CLOUD_DISABLE_GRPC'] = 'true'
+os.environ['NO_GCE_CHECK'] = 'true'
+
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 import tensorflow_datasets as tfds
 import random
-import os
-
-# Suppress TensorFlow log warnings
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ['GOOGLE_CLOUD_DISABLE_GRPC'] = 'true'
-
 
 # Load model only once
 @st.cache_resource
@@ -21,7 +20,10 @@ model = load_model()
 # Load a subset of MNIST dataset (filtered by digit)
 @st.cache_data
 def get_dataset():
-    return list(tfds.as_numpy(tfds.load('mnist', split='train', as_supervised=True)))
+    ds = tfds.load('mnist', split='train', as_supervised=True)
+    ds = ds.take(100)  # hanya ambil 100 data pertama
+    return list(tfds.as_numpy(ds))
+
 
 dataset = get_dataset()
 
